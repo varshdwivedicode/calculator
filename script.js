@@ -67,10 +67,11 @@ function press(val) {
         return;
     }
 
-    // Toggle sign
-    if (val === '+/-') {
-        if (cur !== '0' && cur !== 'Error')
-            cur = cur.startsWith('-') ? cur.slice(1) : '-' + cur;
+    // Backspace button
+    if (val === 'BACK') {
+        if (justEvaled || cur === 'Error') { cur = '0'; justEvaled = false; }
+        else if (cur.length > 1) cur = cur.slice(0, -1);
+        else cur = '0';
         refreshDisplay();
         return;
     }
@@ -143,9 +144,9 @@ document.addEventListener('keydown', e => {
 
     // Backspace — delete last digit
     if (v === 'Backspace') {
-        if (!justEvaled && cur.length > 1) cur = cur.slice(0, -1);
-        else cur = '0';
-        refreshDisplay();
+        press('BACK');
+        const btn = [...document.querySelectorAll('.btn')].find(b => b.dataset.val === 'BACK');
+        if (btn) { btn.style.transform = 'scale(0.93)'; setTimeout(() => btn.style.transform = '', 120); }
         return;
     }
 
