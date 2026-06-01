@@ -1,0 +1,147 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: sans-serif;
+}
+
+.calc-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.calc {
+    width: 320px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Display --- */
+.display {
+    background: #1c1c1e;
+    padding: 1.25rem 1.25rem 1rem;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+.expr {
+    font-size: 13px;
+    color: #888;
+    font-family: monospace;
+    min-height: 18px;
+    word-break: break-all;
+    text-align: right;
+}
+
+.result {
+    font-size: 36px;
+    font-weight: 500;
+    color: #ffffff;
+    font-family: monospace;
+    word-break: break-all;
+    text-align: right;
+    line-height: 1.1;
+}
+
+.result.small {
+    font-size: 26px;
+}
+
+.result.xs {
+    font-size: 20px;
+}
+
+/* --- Button Grid --- */
+.btns {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: #d0d0d0;
+}
+
+.btn {
+    border: none;
+    cursor: pointer;
+    font-size: 17px;
+    font-weight: 400;
+    font-family: sans-serif;
+    padding: 0;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    color: #1c1c1e;
+    transition: background 0.1s, transform 0.08s;
+    user-select: none;
+    outline: none;
+}
+
+.btn:hover {
+    background: #f0f0f0;
+}
+
+.btn:active {
+    transform: scale(0.93);
+    background: #e0e0e0;
+}
+
+/* Operator buttons */
+.btn.op {
+    color: #185FA5;
+    font-size: 19px;
+}
+
+/* Function buttons (AC, +/-, %) */
+.btn.fn {
+    color: #555;
+    font-size: 15px;
+}
+
+/* Equals button */
+.btn.eq {
+    background: #185FA5;
+    color: #ffffff;
+    font-size: 20px;
+}
+
+.btn.eq:hover {
+    background: #1570c8;
+}
+
+.btn.eq:active {
+    background: #0c447c;
+    transform: scale(0.93);
+}
+
+/* Zero button spans 2 columns */
+.btn.zero {
+    grid-column: span 2;
+    justify-content: flex-start;
+    padding-left: 28px;
+}
+
+/* --- Keyboard hint --- */
+.kbd-hint {
+    text-align: center;
+    font-size: 11px;
+    color: #aaa;
+    padding: 8px 0 10px;
+    background: #ffffff;
+}
