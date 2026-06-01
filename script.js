@@ -3,17 +3,34 @@ const exprEl = document.getElementById('expr');
 
 let cur = '0', prev = '', op = '', justEvaled = false;
 
-function setDisplay(val) {
-    resultEl.textContent = val;
-    if (val.length > 12) resultEl.className = 'result xs';
-    else if (val.length > 9) resultEl.className = 'result small';
+const opSyms = { '*': '×', '/': '÷', '+': '+', '-': '−' };
+
+// Show full live expression in result, e.g. "12 + 5"
+function refreshDisplay() {
+    let text = '';
+    if (prev !== '') {
+        text += prev;
+        if (op) text += ' ' + (opSyms[op] || op) + ' ';
+        if (op && cur !== '0') text += cur;
+        else if (op && cur === '0' && !justEvaled) text += '';
+    } else {
+        text = cur;
+    }
+    // If nothing typed yet after operator, still show the operator
+    if (prev !== '' && op && cur === '0') {
+        text = prev + ' ' + (opSyms[op] || op);
+    }
+
+    resultEl.textContent = text || '0';
+    const len = (text || '0').length;
+    if (len > 16) resultEl.className = 'result xs';
+    else if (len > 11) resultEl.className = 'result small';
     else resultEl.className = 'result';
 }
 
-function updateExpr() {
-    const opSyms = { '*': '×', '/': '÷', '+': '+', '-': '−' };
-    if (op && prev) exprEl.textContent = prev + ' ' + (opSyms[op] || op);
-    else exprEl.textContent = '';
+// Top expression line: shows full equation after "="
+function setExpr(text) {
+    exprEl.textContent = text || '';
 }
 
 function evaluate() {
@@ -24,58 +41,63 @@ function evaluate() {
     if (op === '+') res = a + b;
     else if (op === '-') res = a - b;
     else if (op === '*') res = a * b;
-    else if (op === '/') res = b === 0 ? 'Error' : a / b;
+    else if (op === '/') res = b === 0 ? null : a / b;
 
-    if (res === 'Error') {
+    if (res === null) {
         cur = 'Error'; prev = ''; op = '';
-        setDisplay('Error');
+        resultEl.textContent = 'Error';
+        resultEl.className = 'result';
         return;
     }
 
+    // Show full equation in expr line before replacing
+    setExpr(prev + ' ' + (opSyms[op] || op) + ' ' + cur + ' =');
+
     cur = String(parseFloat(res.toFixed(10)));
     prev = '';
-    setDisplay(cur);
+    refreshDisplay();
 }
 
 function press(val) {
     // Clear
     if (val === 'AC') {
         cur = '0'; prev = ''; op = ''; justEvaled = false;
-        exprEl.textContent = '';
-        setDisplay('0');
+        setExpr('');
+        refreshDisplay();
         return;
     }
 
     // Toggle sign
     if (val === '+/-') {
-        if (cur !== '0')
+        if (cur !== '0' && cur !== 'Error')
             cur = cur.startsWith('-') ? cur.slice(1) : '-' + cur;
-        setDisplay(cur);
+        refreshDisplay();
         return;
     }
 
     // Percentage
     if (val === '%') {
         cur = String(parseFloat(cur) / 100);
-        setDisplay(cur);
+        refreshDisplay();
         return;
     }
 
     // Operator
     if (['+', '-', '*', '/'].includes(val)) {
-        if (op && prev && !justEvaled) evaluate();
+        if (op && prev && cur !== '0') evaluate();
+        if (cur === 'Error') return;
         prev = cur;
+        cur = '0';
         op = val;
         justEvaled = false;
-        updateExpr();
+        setExpr('');
+        refreshDisplay();
         return;
     }
 
     // Equals
     if (val === '=') {
         if (!op || !prev) return;
-        const opSyms = { '*': '×', '/': '÷', '+': '+', '-': '−' };
-        exprEl.textContent = prev + ' ' + opSyms[op] + ' ' + cur + ' =';
         evaluate();
         justEvaled = true;
         op = '';
@@ -84,9 +106,9 @@ function press(val) {
 
     // Decimal point
     if (val === '.') {
-        if (justEvaled) { cur = '0'; justEvaled = false; }
+        if (justEvaled) { cur = '0'; justEvaled = false; prev = ''; setExpr(''); }
         if (!cur.includes('.')) cur += '.';
-        setDisplay(cur);
+        refreshDisplay();
         return;
     }
 
@@ -94,13 +116,15 @@ function press(val) {
     if (justEvaled) {
         cur = '0'; justEvaled = false;
         prev = ''; op = '';
-        exprEl.textContent = '';
+        setExpr('');
     }
-    cur = (cur === '0' || cur === '-0')
-        ? (cur.startsWith('-') ? '-' + val : val)
+    if (cur === 'Error') { cur = '0'; prev = ''; op = ''; setExpr(''); }
+
+    cur = (cur === '0')
+        ? val
         : cur + val;
-    setDisplay(cur);
-    updateExpr();
+
+    refreshDisplay();
 }
 
 // --- Button click ---
@@ -119,9 +143,9 @@ document.addEventListener('keydown', e => {
 
     // Backspace — delete last digit
     if (v === 'Backspace') {
-        if (cur.length > 1 && !justEvaled) cur = cur.slice(0, -1);
+        if (!justEvaled && cur.length > 1) cur = cur.slice(0, -1);
         else cur = '0';
-        setDisplay(cur);
+        refreshDisplay();
         return;
     }
 
