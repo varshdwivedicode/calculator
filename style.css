@@ -1,147 +1,414 @@
-* {
+/* ============================================================
+   CALCULATOR — style.css
+   Sections:
+   1. CSS Variables & Reset
+   2. Body & Background
+   3. Calculator Shell
+   4. Display Screen
+   5. Button Grid
+   6. Button Variants  (number / fn / op / eq / zero)
+   7. Extra Functions Row
+   8. Ripple Animation
+   9. Keyboard Hint
+   10. Utility / States
+   ============================================================ */
+
+
+/* ── 1. CSS Variables & Reset ───────────────────────────── */
+*,
+*::before,
+*::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
+:root {
+    --bg: #5d5de3;
+    --surface: #17171e;
+    --surface2: #1f1f2a;
+    --surface3: #282836;
+    --border: rgba(255, 255, 255, 0.07);
+    --border2: rgba(255, 255, 255, 0.13);
+    --text: #f0eff5;
+    --muted: #6b6a7a;
+    --accent: #e0ff54;
+    --accent-dk: #b8d42e;
+    --op-clr: #a78bfa;
+    --op-bg: rgba(167, 139, 250, 0.12);
+    --op-bg2: rgba(167, 139, 250, 0.22);
+    --fn-clr: #94a3b8;
+    --danger: #f87171;
+    --eq-text: #0d1500;
+    --radius: 18px;
+    --radius-sm: 12px;
+}
+
+
+/* ── 2. Body & Background ───────────────────────────────── */
 body {
-    background-color: #f0f0f0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
-    font-family: sans-serif;
-}
-
-.calc-wrap {
+    background: var(--bg);
     display: flex;
+    align-items: center;
     justify-content: center;
-    padding: 2rem 1rem;
-}
-
-.calc {
-    width: 320px;
-    background: #ffffff;
-    border: 1px solid #d0d0d0;
-    border-radius: 16px;
+    font-family: 'Outfit', sans-serif;
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
-/* --- Display --- */
+/* Ambient purple glow — top */
+body::before {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(160, 130, 255, 0.07) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Ambient green glow — bottom */
+body::after {
+    content: '';
+    position: fixed;
+    bottom: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(224, 255, 84, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+
+/* ── 3. Calculator Shell ────────────────────────────────── */
+.calculator {
+    position: relative;
+    width: 340px;
+    background: var(--surface);
+    border-radius: 28px;
+    padding: 22px 20px;
+    border: 1px solid var(--border2);
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.5),
+        0 40px 80px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Top accent line */
+.calculator::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 40px;
+    right: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    border-radius: 2px;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding: 0 2px;
+}
+
+.header-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.header-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.6;
+}
+
+
+/* ── 4. Display Screen ──────────────────────────────────── */
 .display {
-    background: #1c1c1e;
-    padding: 1.25rem 1.25rem 1rem;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 16px 20px 14px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
     min-height: 100px;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    justify-content: flex-end;
-    gap: 4px;
+    justify-content: space-between;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
 }
 
-.expr {
+/* Subtle inner gloss */
+.display::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, transparent 60%);
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.display-history {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    min-height: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+}
+
+.display-expr {
+    font-family: 'DM Mono', monospace;
     font-size: 13px;
-    color: #888;
-    font-family: monospace;
-    min-height: 18px;
-    word-break: break-all;
+    color: rgba(167, 139, 250, 0.7);
     text-align: right;
+    min-height: 17px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.result {
-    font-size: 36px;
-    font-weight: 500;
-    color: #ffffff;
-    font-family: monospace;
-    word-break: break-all;
+.display-main {
+    font-family: 'DM Mono', monospace;
+    font-size: 42px;
+    font-weight: 300;
+    color: var(--text);
     text-align: right;
-    line-height: 1.1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1;
+    transition: font-size 0.1s, color 0.15s;
 }
 
-.result.small {
-    font-size: 26px;
+/* Flash green on result */
+.display-main.result-flash {
+    color: var(--accent);
 }
 
-.result.xs {
-    font-size: 20px;
+/* Red on error */
+.display-main.error {
+    color: var(--danger);
+    font-size: 28px;
 }
 
-/* --- Button Grid --- */
-.btns {
+
+/* ── 5. Button Grid ─────────────────────────────────────── */
+.btn-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: #d0d0d0;
+    gap: 9px;
 }
 
 .btn {
-    border: none;
-    cursor: pointer;
-    font-size: 17px;
+    height: 64px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
     font-weight: 400;
-    font-family: sans-serif;
-    padding: 0;
-    height: 72px;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, transform 0.08s, box-shadow 0.12s;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #ffffff;
-    color: #1c1c1e;
-    transition: background 0.1s, transform 0.08s;
     user-select: none;
+    position: relative;
+    overflow: hidden;
     outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0);
+    transition: background 0.1s;
+    border-radius: inherit;
+}
+
+.btn:hover::after {
+    background: rgba(255, 255, 255, 0.04);
 }
 
 .btn:hover {
-    background: #f0f0f0;
+    border-color: var(--border2);
 }
 
 .btn:active {
-    transform: scale(0.93);
-    background: #e0e0e0;
+    transform: scale(0.91);
 }
 
-/* Operator buttons */
-.btn.op {
-    color: #185FA5;
-    font-size: 19px;
-}
 
-/* Function buttons (AC, +/-, %) */
+/* ── 6. Button Variants ─────────────────────────────────── */
+
+/* Function buttons  (AC, +/−, %) */
 .btn.fn {
-    color: #555;
-    font-size: 15px;
+    background: var(--surface3);
+    color: var(--fn-clr);
+    font-size: 14px;
+    font-weight: 500;
+    border-color: rgba(255, 255, 255, 0.05);
 }
 
-/* Equals button */
+.btn.fn:hover {
+    background: #2e2e40;
+}
+
+/* AC — red tint */
+.btn.clear {
+    color: var(--danger);
+}
+
+/* Operator buttons  (÷ × − +) */
+.btn.op {
+    background: var(--op-bg);
+    color: var(--op-clr);
+    border-color: rgba(167, 139, 250, 0.2);
+    font-size: 22px;
+}
+
+.btn.op:hover {
+    background: var(--op-bg2);
+    border-color: rgba(167, 139, 250, 0.35);
+}
+
+/* Active operator (currently selected) */
+.btn.op.active {
+    background: rgba(167, 139, 250, 0.3);
+    border-color: var(--op-clr);
+    box-shadow: 0 0 16px rgba(167, 139, 250, 0.2);
+}
+
+/* Equals button — spans 2 rows */
 .btn.eq {
-    background: #185FA5;
-    color: #ffffff;
-    font-size: 20px;
+    background: var(--accent);
+    color: var(--eq-text);
+    border-color: var(--accent);
+    font-size: 26px;
+    font-weight: 600;
+    grid-row: span 2;
+    height: 137px;
+    box-shadow: 0 6px 20px rgba(224, 255, 84, 0.2);
 }
 
 .btn.eq:hover {
-    background: #1570c8;
+    background: var(--accent-dk);
+    box-shadow: 0 6px 28px rgba(224, 255, 84, 0.35);
 }
 
 .btn.eq:active {
-    background: #0c447c;
-    transform: scale(0.93);
+    transform: scale(0.92);
 }
 
-/* Zero button spans 2 columns */
+/* Zero — spans 2 columns */
 .btn.zero {
     grid-column: span 2;
     justify-content: flex-start;
-    padding-left: 28px;
+    padding-left: 22px;
+    font-size: 20px;
 }
 
-/* --- Keyboard hint --- */
-.kbd-hint {
-    text-align: center;
+
+/* ── 7. Extra Functions Row ─────────────────────────────── */
+.extras {
+    margin-top: 9px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 9px;
+}
+
+.xbtn {
+    height: 40px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
     font-size: 11px;
-    color: #aaa;
-    padding: 8px 0 10px;
-    background: #ffffff;
+    font-weight: 400;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: background 0.12s, color 0.12s, border-color 0.12s, transform 0.08s;
+    outline: none;
+}
+
+.xbtn:hover {
+    background: var(--surface2);
+    color: var(--text);
+    border-color: var(--border2);
+}
+
+.xbtn:active {
+    transform: scale(0.93);
+}
+
+
+/* ── 8. Ripple Animation ────────────────────────────────── */
+.btn .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    transform: scale(0);
+    animation: ripple 0.4s linear;
+    pointer-events: none;
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+
+/* ── 9. Keyboard Hint ───────────────────────────────────── */
+.hint {
+    text-align: center;
+    margin-top: 14px;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+}
+
+.hint kbd {
+    display: inline-block;
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--fn-clr);
 }
